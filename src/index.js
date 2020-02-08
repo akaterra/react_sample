@@ -1,20 +1,36 @@
+import "@babel/polyfill"
 import React, { Component } from "react"
 import ReactDOM from "react-dom"
-import { createStore } from "redux";
+import { applyMiddleware, createStore, combineReducers } from "redux"
 import { Provider, useDispatch } from 'react-redux'
+import createSagaMiddleware  from "redux-saga"
 import LoginForm from "./components/organisms/login-form"
 import withPopup from "./hocs/with-popup"
 import { showPopup } from "./actions/popup"
-import rootReducer from "./reducers/root"
+import { login } from "./actions/login"
+import popupReducer from "./reducers/popup"
+import loginSaga from "./sagas/login"
 
-const store = createStore(rootReducer)
+// sagas
+const sagaMiddleware = createSagaMiddleware()
 
+// store
+const store = createStore(
+  combineReducers({
+    popup: popupReducer,
+  }),
+  applyMiddleware(sagaMiddleware)
+)
+
+sagaMiddleware.run(loginSaga)
+
+// app
 function App() {
   const dispatch = useDispatch()
 
   return <div>
-    <LoginForm onSubmit={(u) => {
-      dispatch(showPopup("processing login"))
+    <LoginForm onSubmit={({username, password}) => {
+      dispatch(login(username, password))
     }} />
   </div>
 }

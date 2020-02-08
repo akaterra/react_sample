@@ -8,9 +8,9 @@ export function showPopup(text) {
   }
 }
 
-export function hidePopup(text) {
+export function hidePopup() {
   return {
     type: HIDE_POPUP,
-    payload: text,
+    payload: null,
   }
 }
