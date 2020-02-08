@@ -1,5 +1,5 @@
 import React from "react"
-import { useSelector, useState } from 'react-redux'
+import { useSelector } from 'react-redux'
 import Popup from "../components/atoms/popup"
 
 const style = {

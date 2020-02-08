@@ -7,7 +7,7 @@ export default function *() {
     const { payload: { username, password } } = yield take(LOGIN)
 
     if (username === "admin" && password === "admin") {
-
+      yield put()
     } else {
       yield put(showPopup("Invalid username/password"))
     }
