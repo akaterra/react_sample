@@ -2,6 +2,14 @@ const path = require('path')
 const HtmlWebPackPlugin = require("html-webpack-plugin")
 
 module.exports = {
+  entry: {
+    index: './src/index.js',
+  },
+  output: {
+    filename: '[name].bundle.js',
+    chunkFilename: '[name].bundle.js',
+    path: path.resolve(__dirname, 'dist'),
+  },
   module: {
     rules: [
       {
@@ -27,6 +35,17 @@ module.exports = {
       filename: "./index.html"
     })
   ],
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+        commons: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          chunks: 'all'
+        }
+      }
+    }
+  },
   devServer: {
     contentBase: path.join(__dirname, 'dist'),
     compress: true,

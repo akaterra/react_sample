@@ -11,7 +11,6 @@ export default function *() {
     if (username === "admin" && password === "admin") {
       yield putResolve(login)
       yield putResolve(loginStatus(true))
-      yield putResolve(redirect('/'))
     } else {
       yield put(showPopup("Invalid username/password"))
     }

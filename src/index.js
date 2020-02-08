@@ -66,21 +66,13 @@ const AppEntryRoute = ({ loginRedirect, mainRedirect }) => {
 const LoginRoute = ({ children, ...rest }) => {
   const isAuthenticated = useSelector((state) => state.login.isAuthenticated)
 
-  return <Route {...rest} render={(props) => {
-    return isAuthenticated === true
-      ? <Redirect to='/' />
-      : children
-  }} />
+  return <Route {...rest} render={(props) => isAuthenticated ? <Redirect to='/' /> : children} />
 }
 
 const PrivateRoute = ({ children, ...rest }) => {
   const isAuthenticated = useSelector((state) => state.login.isAuthenticated)
 
-  return <Route {...rest} render={(props) => {
-    return isAuthenticated === true
-      ? children
-      : <Redirect to='/login' />
-  }} />
+  return <Route {...rest} render={(props) => isAuthenticated ? children : <Redirect to='/login' />} />
 }
 
 const AppWithPopup = withPopup(App, 'popup')
