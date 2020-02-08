@@ -1,12 +1,11 @@
 import "@babel/polyfill"
 import React, { Component } from "react"
 import ReactDOM from "react-dom"
-import { applyMiddleware, createStore, combineReducers } from "redux"
+import { applyMiddleware, compose, createStore, combineReducers } from "redux"
 import { Provider, useDispatch, useSelector } from 'react-redux'
 import createSagaMiddleware  from "redux-saga"
 import LoginForm from "./components/organisms/login-form"
 import withPopup from "./hocs/with-popup"
-import { showPopup } from "./actions/popup"
 import { login } from "./actions/login"
 import loginReducer from "./reducers/login"
 import popupReducer from "./reducers/popup"
@@ -23,7 +22,16 @@ import {
 
 // middelwares
 const sagaMiddleware = createSagaMiddleware()
-// const route = routerMiddleware(browserHistory)
+
+const routeMiddleware = (store) => (next) => (action) => {
+  if (action.type === 'REDIRECT') {
+    window.location.assign(action.payload)
+
+    return
+  } 
+
+  return next(action)
+}
 
 // store
 const store = createStore(
@@ -31,7 +39,9 @@ const store = createStore(
     login: loginReducer,
     popup: popupReducer,
   }),
-  applyMiddleware(sagaMiddleware)
+  compose(
+    applyMiddleware(sagaMiddleware),
+  )
 )
 
 sagaMiddleware.run(loginSaga)
@@ -47,35 +57,51 @@ function App() {
   </div>
 }
 
-const RootRoute = (loginRedirect, mainRedirect) => {
+const AppEntryRoute = ({ loginRedirect, mainRedirect }) => {
   const isAuthenticated = useSelector((state) => state.login.isAuthenticated)
 
-  return <Redirect from="/" exact to={ isAuthenticated ? loginRedirect : mainRedirect } />
+  return <Redirect from="/" exact to={ isAuthenticated ? mainRedirect : loginRedirect } />
 }
 
-const PrivateRoute = ({ component: Component, ...rest }) => (
-  <Route {...rest} render={(props) => {
-    const isAuthenticated = useSelector((state) => state.isAuthenticated)
+const LoginRoute = ({ children, ...rest }) => {
+  const isAuthenticated = useSelector((state) => state.login.isAuthenticated)
 
-    isAuthenticated === true
-      ? <Component {...props} />
+  return <Route {...rest} render={(props) => {
+    return isAuthenticated === true
+      ? <Redirect to='/' />
+      : children
+  }} />
+}
+
+const PrivateRoute = ({ children, ...rest }) => {
+  const isAuthenticated = useSelector((state) => state.login.isAuthenticated)
+
+  return <Route {...rest} render={(props) => {
+    return isAuthenticated === true
+      ? children
       : <Redirect to='/login' />
   }} />
-)
+}
 
 const AppWithPopup = withPopup(App, 'popup')
+
+function Hello(props) {
+  const username = useSelector((state) => state.login.username)
+
+  return <div>Hello, {username}!</div>
+}
 
 ReactDOM.render(
   <Provider store={store}>
     <Router>
       <Switch>
-        <Route exact path="/login">
+        <LoginRoute exact path="/login">
           <AppWithPopup />
-        </Route>
+        </LoginRoute>
         <PrivateRoute path="/hello">
-          Hello!
+          <Hello />
         </PrivateRoute>
-        <RootRoute loginRedirect="/login" mainRedirect="/hello" />
+        <AppEntryRoute loginRedirect="/login" mainRedirect="/hello" />
       </Switch>
     </Router>
   </Provider>,

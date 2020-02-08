@@ -1,13 +1,17 @@
-import { LOGIN } from "../actions/login"
+import { LOGIN, loginStatus } from "../actions/login"
 import { showPopup } from "../actions/popup"
-import { all, call, put, take, takeEvery, takeLatest } from "redux-saga/effects"
+import { redirect } from "../actions/redirect"
+import { all, call, put, putResolve, take, takeEvery, takeLatest } from "redux-saga/effects"
 
 export default function *() {
   while (true) {
-    const { payload: { username, password } } = yield take(LOGIN)
+    const login = yield take(LOGIN)
+    const { payload: { username, password } } = login
 
     if (username === "admin" && password === "admin") {
-      yield put()
+      yield putResolve(login)
+      yield putResolve(loginStatus(true))
+      yield putResolve(redirect('/'))
     } else {
       yield put(showPopup("Invalid username/password"))
     }
